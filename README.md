@@ -37,23 +37,7 @@ Il sistema segue la struttura AWOL con tre componenti principali:
 ### 3.2 Componenti del Modello
 
 #### 3.2.1 Generatore di Pixel Art
-Il generatore utilizza un'architettura deconvoluzionale che trasforma un vettore di parametri a 128 dimensioni in immagini 64×64:
-
-```python
-class PixelArtGenerator(nn.Module):
-    def __init__(self, param_dim=128, image_size=64):
-        super().__init__()
-        self.fc = nn.Linear(param_dim, 1024 * 4 * 4)
-        self.deconv = nn.Sequential(
-            # Upsampling progressivo da 4×4 a 64×64
-            nn.ConvTranspose2d(1024, 512, 4, stride=2, padding=1),  # 8x8
-            nn.ConvTranspose2d(512, 256, 4, stride=2, padding=1),   # 16x16
-            nn.ConvTranspose2d(256, 128, 4, stride=2, padding=1),   # 32x32
-            nn.ConvTranspose2d(128, 64, 4, stride=2, padding=1),    # 64x64
-            nn.Conv2d(64, 3, 3, stride=1, padding=1),
-            nn.Tanh()  # Output nel range [-1, 1]
-        )
-```
+Il generatore utilizza un'architettura deconvoluzionale che trasforma un vettore di parametri a 128 dimensioni in immagini 64×64
 
 #### 3.2.2 Modello di Flusso Real-NVP
 Il modello Real-NVP implementa trasformazioni invertibili con maschere fisse per mappare gli embeddings CLIP allo spazio dei parametri:
@@ -64,7 +48,7 @@ class RealNVP(nn.Module):
         super().__init__()
         self.scale_nets = nn.ModuleList([...])
         self.translate_nets = nn.ModuleList([...])
-        # Maschere fisse per alternare le trasformazioni
+        # Maschere fisse invece di parametri learnable
         self.masks = [...]
 ```
 
@@ -153,18 +137,3 @@ L'approccio apre interessanti possibilità per:
 
 Il successo di questa trasposizione suggerisce che il framework AWOL ha potenziale per ulteriori applicazioni in domini dove il controllo parametrico strutturato è vantaggioso.
 
-## Riferimenti
-
-- Radford, A., et al. "Learning Transferable Visual Models From Natural Language Supervision." ICML 2021.
-- Dinh, L., et al. "Real-valued (and complex-valued) neural networks for density estimation." NeurIPS 2017.
-- Dataset: "Pokemon LLAVA Images and Text Descriptions" - Kaggle
-
-## Appendice
-
-### A.1 Dettagli Implementativi
-
-Il codice completo include:
-- Gestione del dataset Pokemon con parsing delle immagini bytes
-- Implementazione Real-NVP con maschere fisse
-- Pipeline di training con monitoraggio delle loss
-- Funzioni di test e visualizzazione
